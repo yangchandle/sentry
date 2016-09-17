@@ -365,9 +365,13 @@ def report(request):
     random = get_random(request)
 
     duration = 60 * 60 * 24 * 7
-    timestamp = random.randint(
-        to_timestamp(datetime(2016, 6, 1, 0, 0, 0, tzinfo=timezone.utc)),
-        to_timestamp(datetime(2016, 7, 1, 0, 0, 0, tzinfo=timezone.utc)),
+    timestamp = to_timestamp(
+        to_datetime(
+            random.randint(
+                to_timestamp(datetime(2015, 6, 1, 0, 0, 0, tzinfo=timezone.utc)),
+                to_timestamp(datetime(2016, 7, 1, 0, 0, 0, tzinfo=timezone.utc)),
+            ),
+        ).replace(hour=0, minute=0, second=0, microsecond=0),
     )
 
     organization = Organization(
@@ -496,6 +500,7 @@ def report(request):
             'organization': organization,
             'personal': personal,
             'user': request.user,
+            'calendar': reports.get_calendar_data(stop),
         },
     ).render(request)
 

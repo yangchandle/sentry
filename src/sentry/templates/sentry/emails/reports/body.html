@@ -95,6 +95,7 @@
     </tr>
   </table>
 
+
   {% with report.distribution.total as total %}
   <table class="issue-breakdown">
     <tr>
@@ -223,6 +224,84 @@
     {% endwith %}
 
   </div>
+
+  <style type="text/css">
+    .calendar {
+      border-spacing: 5px;
+      border-collapse: separate;
+    }
+    .calendar td {
+      width: 14.2%;
+      height: 14px;
+      background-color: #ddd;
+      font-size: 0;
+      text-align: center;
+      color: #fff;
+      font-weight: bold;
+    }
+    .calendar td.placeholder {
+      background-color: #ebebeb;
+    }
+  </style>
+
+  <h4>3 Month History</h4>
+
+  <table>
+    <tr>
+      <td width="66%">
+        <table>
+          <tr>
+            {% for date, weeks in calendar %}
+              <td width="33%" style="vertical-align: top;">
+                {{ date|date:"F Y" }}
+                <table class="calendar">
+                  {% for week in weeks %}
+                    <tr>
+                      {% for day, color in week %}
+                        {% if day.month == date.month %}
+                          <td width="14.2%" style="background-color: {{ color }};">{{ day|date:"D"|first }}</td>
+                        {% else %}
+                          <td width="14.2%" class="placeholder"></td>
+                        {% endif %}
+                      {% endfor %}
+                    </tr>
+                  {% endfor %}
+                </table>
+              </td>
+            {% endfor %}
+          </tr>
+        </table>
+      </td>
+      <td width="33%" style="vertical-align:top;">
+        <table>
+          <thead>
+            <tr>
+              <th></th>
+              <th>Best</th>
+              <th>Worst</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>Day</th>
+              <td>Jan 10</td>
+              <td>Nov 30</td>
+            </tr>
+            <tr>
+              <th>Events</th>
+              <td>450</td>
+              <td>52.3k</td>
+            </tr>
+            <tr>
+              <th>Users</th>
+              <td>100</td>
+              <td>5.3k</td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+  </table>
 
   {% if personal.resolved and personal.users %}
     <h4>Your impact</h4>

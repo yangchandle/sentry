@@ -4,10 +4,12 @@ import functools
 import itertools
 import logging
 import operator
+import random
 import zlib
 from collections import namedtuple
-from datetime import timedelta
+from datetime import datetime, timedelta
 
+import pytz
 from django.utils import dateformat, timezone
 
 from sentry import features
@@ -778,3 +780,90 @@ def to_context(reports):
             'series': build_project_breakdown_series(reports),
         },
     }
+
+
+spectrum = [
+    "#A62C21",
+    "#B23024",
+    "#BD3327",
+    "#C93729",
+    "#D43A2C",
+    "#E03E2F",
+    "#E55439",
+    "#EB6943",
+    "#F07F4E",
+    "#F69458",
+    "#FBAA62",
+    "#FBBA72",
+    "#FBC981",
+    "#FBD991",
+    "#FBE8A0",
+    "#FBF8B0",
+    "#DAECA9",
+    "#B9E1A2",
+    "#99D59A",
+    "#78CA93",
+    "#57BE8C",
+    "#58B598",
+    "#59ACA4",
+    "#5BA3B1",
+    "#5C9ABD",
+    "#5D91C9",
+    "#6087C9",
+    "#637DC8",
+    "#6673C8",
+    "#6969C7",
+    "#6C5FC7",
+    "#6359AC",
+][5:20]
+
+
+def walk(sequence):
+    n = len(sequence)
+    """
+    for i in itertools.count():
+        yield sequence[i % n]
+    """
+
+    shift = n / 3
+    position = random.randint(0, n)
+    while True:
+        i = max(
+            0,
+            min(
+                position + random.randint(-shift, shift),
+                n - 1,
+            )
+        )
+        yield sequence[i]
+
+
+def get_calendar_data(stop, months=3):
+    assert (stop.hour, stop.minute, stop.second, stop.microsecond) == (0, 0, 0, 0)
+
+    def to_utc_day(date):
+        return datetime(date.year, date.month, date.day, tzinfo=pytz.utc)
+
+    # TODO: The "stop" time is exclusive, so we need to make sure that if this
+    # is the first day of the month, we don't actually include it in the
+    # calendar.
+
+    index = (stop.year * 12) + (stop.month - 1) - (months - 1)
+
+    from calendar import Calendar
+    calendar = Calendar(6)
+
+    sequence = walk(spectrum)
+
+    results = []
+    for i in xrange(index, index + months):
+        item = (i // 12, (i % 12) + 1)
+        results.append((
+            datetime(*item + (1,), tzinfo=pytz.utc),
+            [zip(map(to_utc_day, week), sequence) for week in calendar.monthdatescalendar(*item)],
+        ))
+
+    import pprint
+    pprint.pprint(results)
+
+    return results
